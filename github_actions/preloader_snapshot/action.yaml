@@ -1,0 +1,30 @@
+name: Generate a preloader snapshot
+inputs:
+  KUBECONFIG:
+    description: 'Path kubeconfig file, relative to workspace'
+    required: true
+  CSI:
+    description: 'Install CSI'
+    default: "true"
+  OSC_ACCESS_KEY:
+    description: 'cluster access key (CSI)'
+  OSC_SECRET_KEY:
+    description: 'cluster secret key (CSI)'
+  OSC_REGION:
+    description: 'cluster region'
+  PRELOADER_IMAGE:
+    description: 'preloader image'
+    default: "outscale/k8s-image-preloader:0.1.0"
+outputs:
+  SNAPSHOT_ID:
+    description: 'Snapshot ID storing images'
+runs:
+  using: 'docker'
+  image: 'Dockerfile'
+  args:
+    - ${{ inputs.KUBECONFIG }}
+    - "${{ inputs.OSC_ACCESS_KEY }}%${{ inputs.OSC_SECRET_KEY }}%${{ inputs.OSC_REGION }}"
+    - ${{ inputs.CSI }}
+    - ${{ inputs.PRELOADER_IMAGE }}
+  entrypoint: '/main.sh'
+  post-entrypoint: '/cleanup.sh'
