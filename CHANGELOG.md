@@ -6,41 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
-## [Unreleased]
-
-### 💥 Breaking
-- (nothing yet)
-
-### ✨ Added
-- (nothing yet)
-
-### 🛠️ Changed / Refactoring
-- (nothing yet)
-
-### 📝 Documentation
-- (nothing yet)
-
-### ⚰️ Deprecated
-- (nothing yet)
-
-### 🗑️ Removed
-- (nothing yet)
-
-### 🐛 Fixed
-- (nothing yet)
-
-### 🔒 Security
-- (nothing yet)
-
-### 📦 Dependency updates
-- (nothing yet)
-
-### 🌱 Others
-- (nothing yet)
-
----
-
-## [1.0.0] - YYYY-MM-DD
+## [v0.1.0] - YYYY-MM-DD
 
 ### ✨ Added
 - Initial release of the project.

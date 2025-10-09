@@ -1,9 +1,9 @@
-## **< Project Name >**
+# Kubernetes image preloader
 
-[![Project Stage](https://docs.outscale.com/fr/userguide/_images/Project-Sandbox-yellow.svg)](https://docs.outscale.com/en/userguide/Open-Source-Projects.html) [![](https://dcbadge.limes.pink/api/server/HUVtY5gT6s?style=flat&theme=default-inverted)](https://discord.gg/HUVtY5gT6s)
+[![Project Sandbox](https://docs.outscale.com/fr/userguide/_images/Project-Sandbox-yellow.svg)](https://docs.outscale.com/en/userguide/Open-Source-Projects.html) [![](https://dcbadge.limes.pink/api/server/HUVtY5gT6s?style=flat&theme=default-inverted)](https://discord.gg/HUVtY5gT6s)
 
 <p align="center">
-  <img alt="<Project Logo or Icon>" src="<Logo URL or Placeholder>" width="100px">
+  <img alt="Kubernetes Logo" src="https://upload.wikimedia.org/wikipedia/commons/3/39/Kubernetes_logo_without_workmark.svg" width="120px">
 </p>
 
 ---
@@ -13,7 +13,6 @@
 - Documentation: <https://docs.outscale.com/en/>
 - Project website: <https://github.com/outscale/<project-name>>
 - Join our community on [Discord](https://discord.gg/HUVtY5gT6s)
-- Related tools or community: <<https://example.com>> *(optional)*
 
 ---
 
@@ -21,10 +20,7 @@
 
 - [Overview](#-overview)
 - [Requirements](#-requirements)
-- [Installation](#-installation)
-- [Configuration](#-configuration)
 - [Usage](#-usage)
-- [Examples](#-examples)
 - [License](#-license)
 - [Contributing](#-contributing)
 
@@ -32,111 +28,133 @@
 
 ## 🧭 Overview
 
-**< Project Name >** is a <short description of what the project does, e.g., "CLI tool to manage...">.
+**Kubernetes image preloader** is a tool that allows you to create a snapshot of images that can be preloaded onto new Kubernetes nodes.
 
-Key features:
-- <Feature 1>
-- <Feature 2>
-- <Feature 3>
+It enables faster startup times and allows nodes to run without internet access.
 
 ---
 
 ## ✅ Requirements
 
-- <Dependency 1> (e.g., Rust, Go, Python 3.11+)
-- <Dependency 2> (e.g., Git)
-- Access to the OUTSCALE API (with appropriate credentials)
-
----
-
-## ⚙ Installation
-
-### Option 1: Download from Releases
-
-Download the latest binary from the [Releases page](https://github.com/outscale/<project-name>/releases).
-
-### Option 2: Install from source
-
-```bash
-git clone https://github.com/outscale/<project-name>.git
-cd <project-name>
-<build or install command>
-````
-
-Example (for Go projects):
-
-```bash
-go install github.com/outscale/<project-name>@latest
-```
-
----
-
-## 🛠 Configuration
-
-\<Explain where the credentials or config are stored, e.g.:>
-
-The tool expects a configuration file at `~/.osc/config.json`.
-
-### Example
-
-```json
-{
-  "default": {
-    "access_key": "MyAccessKey",
-    "secret_key": "MySecretKey",
-    "region": "eu-west-2"
-  }
-}
-```
-
-Use the `--profile` flag to select another profile.
+- A Kubernetes cluster running containerd,
+- A CSI driver with snapshotting enabled.
 
 ---
 
 ## 🚀 Usage
 
+### Creating a snapshot
+
 ```bash
-<command> [OPTIONS]
+kubectl apply -f example/example.yaml
 ```
 
-### Options
+This will:
+- list all images present in the local containerd cache,
+- list all images used by pods/cronjobs on the local cluster and not present in the cache,
+- refetch all images to the local containerd cache,
+- export all images to a PVC,
+- copy a restore script to the PVC,
+- take a CSI snapshot of the volume.
 
-| Option             | Description                            |
-| ------------------ | -------------------------------------- |
-| `-f, --flag`       | What this flag does                    |
-| `-c, --count <N>`  | Run N times                            |
-| `--profile <name>` | Use a specific profile from the config |
-| `-v, --version`    | Print version and exit                 |
+> By default, containerd purges some layers, pulling all images again is required before exporting images.
 
----
+### Preloading images
 
-## 💡 Examples
+To preload the images stored on the snapshot, you will need to attach a volume based on the snapshot to the node VM.
 
-### Basic usage
-
-```bash
-<command>
+Using cluster api, in a OscMachineTemplate resource:
+```yaml
+        vm:
+          [...]
+        volumes:
+        - device: /dev/sdb
+          size: 4
+          fromSnapshot: snap-xxx
 ```
 
-### With options
+> This requires CAPOSC v1.2.0 or later.
 
-```bash
-<command> --flag value --profile test
+And preload images in the KubeadmConfigTemplate/KubeadmControlPlane resources:
+```yaml
+  spec:
+    joinConfiguration:
+      [...]
+    mounts:
+      - - /dev/sdb
+        - /preload
+    preKubeadmCommands:
+      - /preload/restore.sh
 ```
 
-### Using `jq` to filter JSON output
+### Manual use
+
+You will need to run:
+* `preloader export` to export images to the volume,
+* `preloader snapshot` to create a snapshot of the volume,
+* `ctr images import` to import each image.
+
+### preloader export flags
 
 ```bash
-jq '.[] | select(.ResponseStatusCode != 200)' logs.json
+Export a list of images to a path
+
+By default, fetches the list of all images from the local cluster,
+reading the local containerd cache and the list of pods/cronjobs,
+and exports all images found to path.
+
+Usage:
+  preloader export [flags]
+
+Aliases:
+  export, e
+
+Flags:
+      --cache-only          Only list images present in local cache, do not list pods
+      --exclude strings     Prefixes to skip from the list
+      --force-pull          Force an image pull before exporting
+  -h, --help                help for export
+      --no-restore-script   Do not copy restore script to the volume
+      --stdin               Fetch image list from stdin instead of the local cluster
+      --to string           Path to snapshot volume (default "/snapshot")
+
+Global Flags:
+      --ctr-flags string   ctr flags (default "-a /var/run/containerd/containerd.sock")
+      --ctr-path string    ctr binary path (default "/usr/local/bin/ctr")
+      --debug              log ctr command output
+```
+
+### preloader snapshot flags
+
+```bash
+Create a VolumeSnapshot from the PVC storing exports of images.
+
+Usage:
+  preloader snapshot [flags]
+
+Aliases:
+  snapshot, s
+
+Flags:
+      --class string       VolumeSnapshotClass to use (required)
+  -h, --help               help for snapshot
+      --name string        Name of the VolumeSnapshot to create (required)
+      --namespace string   Namespace of the VolumeSnapshot to create (required)
+      --pvc string         PVC to snashot (required)
+
+Global Flags:
+      --ctr-flags string   ctr flags (default "-a /var/run/containerd/containerd.sock")
+      --ctr-path string    ctr binary path (default "/usr/local/bin/ctr")
+      --debug              log ctr command output
 ```
 
 ---
 
 ## 📜 License
 
-**< Project Name >** is released under the < License Name > license.
+**Kubernetes image preloader** is released under the BSD 3-Clause license.
 
-© < Year > Outscale SAS
+© 2025 Outscale SAS
 
 See [LICENSE](./LICENSE) for full details.
 
@@ -147,15 +165,3 @@ See [LICENSE](./LICENSE) for full details.
 We welcome contributions!
 
 Please read our [Contributing Guidelines](CONTRIBUTING.md) and [Code of Conduct](CODE_OF_CONDUCT.md) before submitting a pull request.
-
----
-
-### Notes for reuse:
-- Replace all `<...>` placeholders with your content.
-- You can prefill the `Project Stage` badge with values like:
-  - `Project-Incubating-blue.svg`
-  - `Project-Graduated-green.svg`
-- You may include platform-specific instructions (macOS/Linux/Windows) in collapsible `<details>` blocks if needed.
-
->Labels are centrally managed in the outscale/.github repository (labels.yml).
->This repo includes a workflow (.github/workflows/sync-labels.yml) that syncs labels from there.

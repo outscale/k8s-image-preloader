@@ -1,0 +1,26 @@
+name: lint
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "**.go"
+      - "**.yaml"
+      - "**.mod"
+      - "**.sum"
+      - "Makefile"
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: ⬇️ Checkout repository
+        uses: actions/checkout@v5
+      - name: 🔎 golangci-lint
+        uses: golangci/golangci-lint-action@v8
+        with:
+          version: v2.5
+          args: --timeout=300s
+          only-new-issues: true
+      - name: ⬇️ Install yamllint
+        run: pip install yamllint
+      - name: 🔎 check with yamlint
+        run: yamllint -c .github/linters/yaml-lint.yaml . --format github
