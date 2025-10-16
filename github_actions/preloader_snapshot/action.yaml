@@ -14,7 +14,7 @@ inputs:
     description: 'cluster region'
   PRELOADER_IMAGE:
     description: 'preloader image'
-    default: "outscale/k8s-image-preloader:0.1.0"
+    default: "outscale/k8s-image-preloader:v0.1.0"
 outputs:
   SNAPSHOT_ID:
     description: 'Snapshot ID storing images'
