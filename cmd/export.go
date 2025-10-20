@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net"
 	"os"
+	"os/exec"
 	"path"
 	"slices"
 	"strings"
@@ -34,7 +35,7 @@ func init() {
 	rootCmd.AddCommand(exportCmd)
 	exportCmd.Flags().BoolVar(&stdin, "stdin", false, "Fetch image list from stdin instead of the local cluster")
 	exportCmd.Flags().BoolVar(&cacheOnly, "cache-only", false, "Only list images present in local cache, do not list pods")
-	exportCmd.Flags().StringSliceVar(&excludedPrefixes, "exclude", nil, "Prefixes to skip from the list")
+	exportCmd.Flags().StringSliceVar(&excludedPrefixes, "exclude", []string{"docker.io/outscale/k8s-image-preloader"}, "Prefixes to skip from the list")
 	exportCmd.Flags().BoolVar(&forcePull, "force-pull", false, "Force an image pull before exporting")
 	exportCmd.Flags().StringVar(&snapshotsPath, "to", "/snapshot", "Path to snapshot volume")
 	exportCmd.Flags().BoolVar(&noRestoreScript, "no-restore-script", false, "Do not copy restore script to the volume")
@@ -59,6 +60,7 @@ and exports all images found to path.`,
 			imgs = ListFromCluster(ctx, k8s, excludedPrefixes)
 		}
 		Export(ctx, imgs)
+		Sync(ctx)
 		if !noRestoreScript {
 			CopyRestoreScript(ctx)
 		}
@@ -82,14 +84,22 @@ func ListFromCluster(ctx context.Context, k8s *kubernetes.Clientset, excludedPre
 func listFromCache(ctx context.Context, excludedPrefixes []string) []Image {
 	local := ctr(ctx, "images", "list")
 	imgs := make([]Image, 0, len(local))
-	for i := range local {
-		ref := strings.Split(local[i], " ")[0]
-		if ref == "REF" || strings.HasPrefix(ref, "sha256:") {
+	done := map[string]bool{}
+	for i, line := range local {
+		if i == 0 { // skipping header
 			continue
 		}
+		parts := strings.Fields(line)
+		ref, digest := parts[0], parts[2]
+		if done[digest] {
+			fmt.Println("Skipping " + ref)
+			continue
+		}
+		done[digest] = true
 		if slices.ContainsFunc(excludedPrefixes, func(prefix string) bool {
 			return strings.HasPrefix(ref, prefix)
 		}) {
+			fmt.Println("Excluding " + ref)
 			continue
 		}
 		fmt.Println("Found " + ref + " in local cache")
@@ -195,12 +205,23 @@ for archive in ` + "`" + `ls $DIR/*.tar` + "`" + `; do
 done`))
 
 func CopyRestoreScript(ctx context.Context) {
-	_, rp, _ := strings.Cut(snapshotsPath, ":")
 	fmt.Println("Copying restore script...")
-	fd, err := os.OpenFile(path.Join(rp, "restore.sh"), os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0755) //nolint: gosec
+	fd, err := os.OpenFile(path.Join(snapshotsPath, "restore.sh"), os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0755) //nolint: gosec
 	exitOnError(err)
-	err = restoreTemplate.Execute(fd, map[string]string{"ctrBin": path.Join(ctrPath, "ctr")})
+	err = restoreTemplate.Execute(fd, map[string]string{"ctrBin": ctrPath})
+	exitOnError(err)
+	err = fd.Sync()
 	exitOnError(err)
 	err = fd.Close()
 	exitOnError(err)
+}
+
+func Sync(ctx context.Context) {
+	fmt.Println("Sync...")
+	cmd := exec.CommandContext(ctx, "sync")
+	cmd.Stderr = os.Stderr
+	err := cmd.Run()
+	if err != nil {
+		os.Exit(cmd.ProcessState.ExitCode())
+	}
 }

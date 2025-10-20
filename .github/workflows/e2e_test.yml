@@ -39,6 +39,14 @@ jobs:
         access_key: ${{ secrets[env.OSC_ACCESS_KEY_NAME] }}
         secret_key: ${{ secrets[env.OSC_SECRET_KEY_NAME] }}
         region: ${{ env.OSC_REGION }}
+    - name: 📦 Build & Push the Docker image
+      run: |
+        docker login ${{ vars.REGISTRY }} -u admin -p ${{ secrets.HARBOR_ADMIN_PASSWORD }}
+        make image-build image-tag image-push
+      env:
+        REGISTRY_IMAGE: "${{ vars.REGISTRY }}/outscale/k8s-image-preloader"
+        IMAGE_TAG: ${{ github.sha }}
+        REGISTRY_TAG: ${{ github.sha }}
     - name: 👷 Deploy test cluster
       id: testcluster
       uses: outscale/cluster-api-provider-outscale/github_actions/deploy_cluster@main
@@ -53,14 +61,6 @@ jobs:
         CLUSTER_NAME: "k8s-preloader"
         IMAGE_NAME: ${{ vars.IMG_KUBERNETES }}
         CCM: true
-    - name: 📦 Build & Push the Docker image
-      run: |
-        docker login ${{ vars.REGISTRY }} -u admin -p ${{ secrets.HARBOR_ADMIN_PASSWORD }}
-        make image-build image-tag image-push
-      env:
-        REGISTRY_IMAGE: "${{ vars.REGISTRY }}/outscale/k8s-image-preloader"
-        IMAGE_TAG: ${{ github.sha }}
-        REGISTRY_TAG: ${{ github.sha }}
     - name: 🔎 Take snapshot
       id: snapshot
       uses: ./github_actions/preloader_snapshot
