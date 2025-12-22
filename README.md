@@ -68,8 +68,9 @@ Using cluster api, in a OscMachineTemplate resource:
         vm:
           [...]
         volumes:
-        - device: /dev/sdb
-          size: 4
+        - device: /dev/xvdb
+          size: 2
+          type: gp2
           fromSnapshot: snap-xxx
 ```
 
@@ -81,8 +82,10 @@ And preload images in the KubeadmConfigTemplate/KubeadmControlPlane resources:
     joinConfiguration:
       [...]
     mounts:
-      - - /dev/sdb
+      - - xvdb
         - /preload
+        - ext4
+        - auto,exec,ro
     preKubeadmCommands:
       - /preload/restore.sh
 ```
