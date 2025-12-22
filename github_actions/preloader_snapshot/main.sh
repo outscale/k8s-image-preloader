@@ -19,8 +19,8 @@ if [ "$CSI" = "true" ]; then
   kubectl create secret generic osc-csi-bsu --from-literal=access_key=$OSC_ACCESS_KEY --from-literal=secret_key=$OSC_SECRET_KEY -n kube-system
   helm upgrade --install osc-bsu-csi-driver oci://docker.io/outscalehelm/osc-bsu-csi-driver \
       --namespace kube-system \
-      --set enableVolumeSnapshot=true \
-      --set region=$OSC_REGION
+      --set driver.enableVolumeSnapshot=true \
+      --set cloud.region=$OSC_REGION
 fi
 
 sed -i "s=PRELOADER_IMAGE=$PRELOADER_IMAGE=g" /snapshot.yaml
