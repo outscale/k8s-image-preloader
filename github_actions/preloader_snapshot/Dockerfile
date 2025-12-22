@@ -1,4 +1,4 @@
-FROM debian:12
+FROM debian:13@sha256:0d01188e8dd0ac63bf155900fad49279131a876a1ea7fac917c62e87ccb2732d
 
 RUN apt-get update && apt-get upgrade -y && apt-get install -y curl gpg
 
