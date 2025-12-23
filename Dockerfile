@@ -26,7 +26,7 @@ COPY cmd/ cmd/
 # by leaving it empty we can ensure that the container and binary shipped on it will have the same platform.
 RUN GOOS=${TARGETOS:-linux} GOARCH=${TARGETARCH} make build
 
-FROM debian:12
+FROM debian:12@sha256:7e5bc0e499a8d50cb1e32287944a90b9ec8fd7d500673e75daff3f52882f5798
 WORKDIR /
 RUN apt-get update && apt-get install -y ca-certificates && apt-get clean && rm -rf /var/lib/apt/lists/*
 COPY snapshot.sh .
