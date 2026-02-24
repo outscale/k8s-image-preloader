@@ -1,4 +1,4 @@
-FROM debian:12@sha256:c66c66fac809bfb56a8001b12f08181a49b6db832d2c8ddabe22b6374264055f
+FROM debian:12@sha256:0a5bf4ecacfc050bad0131c8e1401063fd1e8343a418723f6dbd3cd13a7b9e33
 
 RUN apt-get update && apt-get upgrade -y && apt-get install -y curl gpg
 
