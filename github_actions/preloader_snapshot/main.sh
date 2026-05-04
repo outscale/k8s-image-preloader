@@ -1,6 +1,6 @@
 #!/bin/bash
 set -ex
-if [ "$1" -ne "" ]; then
+if [ -n "$1" ]; then
     export KUBECONFIG=/github/workspace/$1
 fi
 OSC_AKSK=$2

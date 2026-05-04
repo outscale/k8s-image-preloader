@@ -1,9 +1,9 @@
 module github.com/outscale/k8s-image-preloader
 
-go 1.24.7
+go 1.25.3
 
 require (
-	github.com/kubernetes-csi/external-snapshotter/client/v8 v8.2.0
+	github.com/kubernetes-csi/external-snapshotter/client/v8 v8.4.0
 	github.com/spf13/cobra v1.10.2
 	k8s.io/api v0.34.3
 	k8s.io/apimachinery v0.34.3
