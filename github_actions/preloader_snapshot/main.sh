@@ -1,6 +1,8 @@
 #!/bin/bash
 set -ex
-export KUBECONFIG=/github/workspace/$1
+if [ "$1" -ne "" ]; then
+    export KUBECONFIG=/github/workspace/$1
+fi
 OSC_AKSK=$2
 CSI=$3
 PRELOADER_IMAGE=$4
