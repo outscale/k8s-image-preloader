@@ -3,6 +3,9 @@ set -ex
 if [ -n "$1" ]; then
     export KUBECONFIG=/github/workspace/$1
 fi
+if [ -n "$5" ]; then
+    kubectl config use-context $5
+fi
 OSC_AKSK=$2
 CSI=$3
 PRELOADER_IMAGE=$4

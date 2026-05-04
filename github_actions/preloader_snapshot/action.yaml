@@ -1,8 +1,9 @@
 name: Generate a preloader snapshot
 inputs:
   KUBECONFIG:
-    description: 'Path kubeconfig file, relative to workspace'
-    required: true
+    description: 'Path to kubeconfig file, relative to workspace'
+  KUBECONTEXT:
+    description: 'Kubectl context to use'
   CSI:
     description: 'Install CSI'
     default: "true"
@@ -26,5 +27,6 @@ runs:
     - "${{ inputs.OSC_ACCESS_KEY }}%${{ inputs.OSC_SECRET_KEY }}%${{ inputs.OSC_REGION }}"
     - ${{ inputs.CSI }}
     - ${{ inputs.PRELOADER_IMAGE }}
+    - ${{ inputs.KUBECONTEXT }}
   entrypoint: '/main.sh'
   post-entrypoint: '/cleanup.sh'
