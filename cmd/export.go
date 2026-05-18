@@ -29,6 +29,7 @@ var (
 	excludedPrefixes []string
 	forcePull        bool
 	noRestoreScript  bool
+	platform         string
 )
 
 func init() {
@@ -39,6 +40,7 @@ func init() {
 	exportCmd.Flags().BoolVar(&forcePull, "force-pull", false, "Force an image pull before exporting")
 	exportCmd.Flags().StringVar(&snapshotsPath, "to", "/snapshot", "Path to snapshot volume")
 	exportCmd.Flags().BoolVar(&noRestoreScript, "no-restore-script", false, "Do not copy restore script to the volume")
+	exportCmd.Flags().StringVar(&platform, "platform", "linux/amd64", "Image plaform to export")
 }
 
 var exportCmd = &cobra.Command{
@@ -188,11 +190,11 @@ func Export(ctx context.Context, imgs []Image) {
 	for _, img := range imgs {
 		if !img.inCache || forcePull {
 			fmt.Println("Pulling " + img.ref + "...")
-			ctr(ctx, "images", "pull", img.ref)
+			ctr(ctx, "images", "pull", "--all-platforms", img.ref)
 		}
 		fmt.Println("Exporting " + img.ref + "...")
 		fname := path.Join(snapshotsPath, strings.ReplaceAll(img.ref, "/", "_")+".tar")
-		ctr(ctx, "images", "export", fname, img.ref, "--platform", "linux/amd64")
+		ctr(ctx, "images", "export", "--platform", platform, fname, img.ref)
 	}
 }
 
@@ -206,7 +208,7 @@ done`))
 
 func CopyRestoreScript(ctx context.Context) {
 	fmt.Println("Copying restore script...")
-	fd, err := os.OpenFile(path.Join(snapshotsPath, "restore.sh"), os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0755) //nolint: gosec
+	fd, err := os.OpenFile(path.Join(snapshotsPath, "restore.sh"), os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0o755) //nolint: gosec
 	exitOnError(err)
 	err = restoreTemplate.Execute(fd, map[string]string{"ctrBin": ctrPath})
 	exitOnError(err)

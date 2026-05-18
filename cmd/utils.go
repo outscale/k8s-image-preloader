@@ -42,16 +42,22 @@ func getSnapshotClient() *snapshotclient.Clientset {
 }
 
 func ctr(ctx context.Context, args ...string) []string {
-	args = append([]string{"-n", "k8s.io"}, append(strings.Split(ctrFlags, " "), args...)...)
+	cmdArgs := append([]string{"-n", "k8s.io"}, strings.Split(ctrFlags, " ")...)
+	if debug {
+		cmdArgs = append(cmdArgs, "--debug")
+	}
+	args = append(cmdArgs, args...)
 	cmd := exec.CommandContext(ctx, ctrPath, args...)
 	stderr := &bytes.Buffer{}
 	stdout := &bytes.Buffer{}
 	cmd.Stderr = stderr
 	cmd.Stdout = stdout
 	err := cmd.Run()
-	if err != nil {
+	if err != nil || debug {
 		fmt.Fprintln(os.Stderr, ctrPath, strings.Join(args, " "))
 		fmt.Fprintln(os.Stderr, stderr.String())
+	}
+	if err != nil {
 		os.Exit(cmd.ProcessState.ExitCode())
 	}
 	return parseLines(stdout, debug)

@@ -86,7 +86,7 @@ spec:
         securityContext:
           privileged: true
           runAsUser: 0
-        command: ["/snapshot.sh"]
+        command: ["/snapshot.sh", "--debug"]
         env:
         - name: COPY_TO
           value: /snapshot

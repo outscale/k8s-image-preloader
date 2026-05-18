@@ -14,8 +14,25 @@ on:
   workflow_dispatch:
 
 jobs:
-  e2e:
+  build:
     runs-on: [self-hosted, linux]
+    steps:
+    - name: ⬇️ Checkout repository
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+    - name: 📦 Build & Push the Docker image
+      run: |
+        docker login ${{ vars.REGISTRY }} -u admin -p ${{ secrets.HARBOR_ADMIN_PASSWORD }}
+        make image-build image-tag image-push
+      env:
+        REGISTRY_IMAGE: "${{ vars.REGISTRY }}/outscale/k8s-image-preloader"
+        IMAGE_TAG: ${{ github.sha }}
+        REGISTRY_TAG: ${{ github.sha }}
+  e2e:
+    strategy:
+      matrix:
+        img_kubernetes: ${{ fromJson(vars.IMG_KUBERNETES_MATRIX) }}
+    runs-on: [self-hosted, linux]
+    needs: build
     steps:
     - name: ⬇️ Checkout repository
       uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
@@ -29,24 +46,12 @@ jobs:
       uses: azure/setup-helm@dda3372f752e03dde6b3237bc9431cdc2f7a02a2 # v5
       with:
         version: v3.18.5
-    - name: ⬇️ Install Go
-      uses: actions/setup-go@4a3601121dd01d1626a1e23e37211e3254c1c06c # v6
-      with:
-        go-version-file: 'go.mod'
     - name: 🧹 Frieza
       uses: outscale/frieza-github-actions/frieza-clean@master
       with:
         access_key: ${{ secrets[env.OSC_ACCESS_KEY_NAME] }}
         secret_key: ${{ secrets[env.OSC_SECRET_KEY_NAME] }}
         region: ${{ env.OSC_REGION }}
-    - name: 📦 Build & Push the Docker image
-      run: |
-        docker login ${{ vars.REGISTRY }} -u admin -p ${{ secrets.HARBOR_ADMIN_PASSWORD }}
-        make image-build image-tag image-push
-      env:
-        REGISTRY_IMAGE: "${{ vars.REGISTRY }}/outscale/k8s-image-preloader"
-        IMAGE_TAG: ${{ github.sha }}
-        REGISTRY_TAG: ${{ github.sha }}
     - name: 👷 Deploy test cluster
       id: testcluster
       uses: outscale/cluster-api-provider-outscale/github_actions/deploy_cluster@main
@@ -59,11 +64,11 @@ jobs:
         OSC_SECRET_KEY: ${{ secrets[env.OSC_SECRET_KEY_NAME] }}
         OSC_REGION: ${{ env.OSC_REGION }}
         CLUSTER_NAME: "k8s-preloader"
-        IMAGE_NAME: ${{ vars.IMG_KUBERNETES }}
+        IMAGE_NAME: ${{ matrix.img_kubernetes }}
         CCM: true
     - name: 🔎 Take snapshot
       id: snapshot
-      uses: ./github_actions/preloader_snapshot
+      uses: ./.github/actions/preloader_snapshot
       with:
         KUBECONFIG: ${{ steps.testcluster.outputs.KUBECONFIG }}
         OSC_ACCESS_KEY: ${{ secrets[env.OSC_ACCESS_KEY_NAME] }}
