@@ -1,8 +1,12 @@
-name: Release 
+name: Release
 
 on:
   release:
     types: [published]
+
+permissions:
+  contents: read
+
 jobs:
   push-docker-image:
     runs-on: ubuntu-latest
