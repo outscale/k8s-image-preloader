@@ -6,6 +6,10 @@ on:
       - "**.go"
       - "**.mod"
       - "**.sum"
+
+permissions:
+  contents: read
+
 jobs:
   lint:
     runs-on: ubuntu-latest
