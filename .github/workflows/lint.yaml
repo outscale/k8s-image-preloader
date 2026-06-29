@@ -6,6 +6,7 @@ on:
       - "**.go"
       - "**.mod"
       - "**.sum"
+      - .github/workflows/lint.yaml
 
 permissions:
   contents: read
@@ -17,4 +18,4 @@ jobs:
       - name: ⬇️ Checkout repository
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
       - name: 🔎 golangci-lint
-        uses: outscale/goutils/.github/actions/lint@main
+        uses: outscale/goutils/.github/actions/lint@ba9b0e7bcc1ab4b8fd2c69d8b4de17d86218f5b5 # v1
