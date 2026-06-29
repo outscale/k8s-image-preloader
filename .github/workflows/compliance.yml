@@ -1,4 +1,4 @@
-name: Github sanity scanner
+name: Compliance
 
 on:
   pull_request:
@@ -8,11 +8,11 @@ permissions:
   contents: read
 
 jobs:
-  github-sanity-scan:
+  compliance:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
-    - name: Github sanity scanner
-      uses: outscale/github-sanity-scan@main
+    - name: Plumber
+      uses: outscale/.github/pipeline-compliance@d1bf523f2ce3fccb0784dfd03ca3cd5e0b906be8 # main
       with:
-        no-pull-request-target: true
+        github-token: ${{ secrets.PLUMBER_TOKEN }}
