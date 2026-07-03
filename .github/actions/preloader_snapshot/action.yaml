@@ -14,7 +14,10 @@ inputs:
     description: 'cluster region'
   PRELOADER_IMAGE:
     description: 'preloader image'
-    default: "outscale/k8s-image-preloader:v0.2.0"
+    default: "outscale/k8s-image-preloader"
+  PRELOADER_VERSION:
+    description: 'preloader image version'
+    default: "v0.2.0"
 outputs:
   SNAPSHOT_ID:
     description: 'Snapshot ID storing images'
@@ -25,6 +28,6 @@ runs:
     - ${{ inputs.KUBECONFIG }}
     - "${{ inputs.OSC_ACCESS_KEY }}%${{ inputs.OSC_SECRET_KEY }}%${{ inputs.OSC_REGION }}"
     - ${{ inputs.CSI }}
-    - ${{ inputs.PRELOADER_IMAGE }}
+    - "${{ inputs.PRELOADER_IMAGE }}:${{ inputs.PRELOADER_VERSION }}"
   entrypoint: '/main.sh'
   post-entrypoint: '/cleanup.sh'

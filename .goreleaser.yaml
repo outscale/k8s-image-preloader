@@ -1,0 +1,53 @@
+# This is an example .goreleaser.yml file with some sensible defaults.
+# Make sure to check the documentation at https://goreleaser.com
+
+# The lines below are called `modelines`. See `:help modeline`
+# Feel free to remove those if you don't want/need to use them.
+# yaml-language-server: $schema=https://goreleaser.com/static/schema.json
+# vim: set ts=2 sw=2 tw=0 fo=cnqoj
+
+version: 2
+
+before:
+  hooks:
+    # You may remove this if you don't use go modules.
+    - go mod tidy
+    # you may remove this if you don't need go generate
+    - go generate ./...
+
+builds:
+  - binary: preloader
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+    goarch:
+      - amd64
+    ldflags:
+        - "-s -w {{ if not .IsSnapshot }}-X {{ .ModulePath }}/cmd.version=v{{.Version}} -X {{ .ModulePath }}/cmd.buildDate={{.Date}}{{ end }}"
+
+changelog:
+  use: github-native
+
+release:
+  draft: true
+
+dockers_v2:
+  - images:
+      - "outscale/k8s-image-preloader"
+    tags:
+      - "v{{ .Version }}"
+      - "{{ if .IsSnapshot }}dev{{ end }}"
+    platforms:
+      - linux/amd64
+    labels:
+      "org.opencontainers.image.description": "k8s-image-preloader"
+      "org.opencontainers.image.created": "{{.Date}}"
+      "org.opencontainers.image.name": "{{.ProjectName}}"
+      "org.opencontainers.image.revision": "{{.FullCommit}}"
+      "org.opencontainers.image.version": "{{.Version}}"
+      "org.opencontainers.image.source": "{{.GitURL}}"
+    build_args:
+      VERSION: "v{{ .Version }}"
+    extra_files:
+      - snapshot.sh
