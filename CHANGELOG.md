@@ -10,6 +10,23 @@
 * ⬆️ deps(dockerfile): update debian:12 docker digest to 30482e8 by @Open-Source-Bot in https://github.com/outscale/k8s-image-preloader/pull/52
 * ⬆️ deps(dockerfile): update golang:1.26 docker digest to 32c0e6e by @Open-Source-Bot in https://github.com/outscale/k8s-image-preloader/pull/51
 
+## New Contributors
+* @github-actions[bot] made their first contribution in https://github.com/outscale/k8s-image-preloader/pull/61
+
+**Full Changelog**: https://github.com/outscale/k8s-image-preloader/compare/v0.2.0...v0.3.0
+
+
+
+## v0.3.0 - 20260707
+  <!-- Release notes generated using configuration in .github/release.yml at v0.3.0 -->
+
+## What's Changed
+### 📦 Dependency updates
+* ⬆️ deps(dockerfile): update golang:1.26 docker digest to 68cb6d6 by @Open-Source-Bot in https://github.com/outscale/k8s-image-preloader/pull/46
+* ⬆️ deps(dockerfile): update debian:12 docker digest to ed4fcc4 by @Open-Source-Bot in https://github.com/outscale/k8s-image-preloader/pull/43
+* ⬆️ deps(dockerfile): update debian:12 docker digest to 30482e8 by @Open-Source-Bot in https://github.com/outscale/k8s-image-preloader/pull/52
+* ⬆️ deps(dockerfile): update golang:1.26 docker digest to 32c0e6e by @Open-Source-Bot in https://github.com/outscale/k8s-image-preloader/pull/51
+
 
 **Full Changelog**: https://github.com/outscale/k8s-image-preloader/compare/v0.2.0...v0.3.0
 
