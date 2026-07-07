@@ -1,7 +1,6 @@
 # 📜 Changelog
 
-## v0.3.0 - 20260707
-  <!-- Release notes generated using configuration in .github/release.yml at v0.3.0 -->
+## [v0.3.0](https://api.github.com/repos/outscale/k8s-image-preloader/releases/350229960) - 2026-07-07
 
 ## What's Changed
 ### 📦 Dependency updates
@@ -10,10 +9,8 @@
 * ⬆️ deps(dockerfile): update debian:12 docker digest to 30482e8 by @Open-Source-Bot in https://github.com/outscale/k8s-image-preloader/pull/52
 * ⬆️ deps(dockerfile): update golang:1.26 docker digest to 32c0e6e by @Open-Source-Bot in https://github.com/outscale/k8s-image-preloader/pull/51
 
-
-**Full Changelog**: https://github.com/outscale/k8s-image-preloader/compare/v0.2.0...v0.3.0
-
-
+## New Contributors
+* @github-actions[bot] made their first contribution in https://github.com/outscale/k8s-image-preloader/pull/61
 
 ## [v0.2.0] - 2026-05-20
 
