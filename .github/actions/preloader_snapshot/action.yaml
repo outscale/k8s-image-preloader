@@ -17,7 +17,7 @@ inputs:
     default: "outscale/k8s-image-preloader"
   PRELOADER_VERSION:
     description: 'preloader image version'
-    default: "v0.2.0"
+    default: "v0.3.0"
 outputs:
   SNAPSHOT_ID:
     description: 'Snapshot ID storing images'
