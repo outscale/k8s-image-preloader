@@ -69,7 +69,7 @@ jobs:
     - name: ⬇️ Install helm
       uses: azure/setup-helm@9bc31f4ebc9c6b171d7bfbaa5d006ae7abdb4310 # v5.0.1
       with:
-        version: v3.21.3
+        version: v4.2.3
     - name: 🧹 Frieza
       uses: outscale/frieza-github-actions/frieza-clean@1d8b83bc64d2230a0c3bc9f018ba6c0c67df98e8 # v0.15.0-hotfix.0
       with:
