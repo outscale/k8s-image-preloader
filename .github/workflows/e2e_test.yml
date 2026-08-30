@@ -79,7 +79,7 @@ jobs:
         exclude_resource_types: access_key
     - name: 👷 Deploy test cluster
       id: testcluster
-      uses: outscale/cluster-api-provider-outscale/.github/actions/deploy_cluster@f505cfa8d2bcc452b7a733879f27307859188ed3 # v1.5.0
+      uses: outscale/cluster-api-provider-outscale/.github/actions/deploy_cluster@7ddc5fd22c49ce7216e9321c2fe254e2d8e5f92d # v1.5.2
       with:
         RUNNER_NAME: ${{ runner.name }}
         OKS_ACCESS_KEY: ${{ secrets.OKS_ACCESS_KEY }}
