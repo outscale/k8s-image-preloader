@@ -2,7 +2,7 @@ module github.com/outscale/k8s-image-preloader
 
 go 1.26.0
 
-toolchain go1.26.6
+toolchain go1.27.0
 
 require (
 	github.com/kubernetes-csi/external-snapshotter/client/v8 v8.2.0
